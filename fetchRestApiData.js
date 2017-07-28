@@ -10,74 +10,155 @@
 
 */
 
-jQuery(document).ready(function ($) {
-  require(["jquery", "jquery/cookie", "ep/fn/busy"], function ($) {
+// Depends on cartridge FI_GAGAR::AllSeeingEye which maps object AllSeeingEye to
+// window object. See https://github.com/vilkasgroup/FI_GAGAR/tree/develop/AllSeeingEye
+// for more details
 
-    function fetchProductData() {
-      // resolve needed variables
-      console.log("requestProtocolAndServer: ", window.ep.config.requestProtocolAndServer);
-      console.log("storeFrontUrl: ", window.ep.config.storeFrontUrl);
-
-      var url = window.ep.config.requestProtocolAndServer || "http://epages02.mikko.pri/";
-      var storefront = window.ep.config.requestProtocolAndServer || "http://epages02.mikko.pri/epages/DemoShop.sf";
-
-      // extremely shady
-      var shopName = storefront.substring(storefront.lastIndexOf("/") + 1, storefront.lastIndexOf("."))
-
-      var restUrl = url + "rs/shops/" + shopName;
-      console.log(restUrl)
-
-      var canonicalUrl = window.ep.config.canonicalUrl;
-      var productId = /[^/]*$/.exec(canonicalUrl)[0];
-
-      console.log(productId)
-
-      // http: //epages02.mikko.pri/rs/shops/DemoShop/products/?resultsPerPage=100&q=md_49417110
-      var requestUrl = restUrl + "/products/?q=" + productId
-
-      console.log("requestUrl", requestUrl)
-
-      jQuery.ajax({
-        url: requestUrl,
-        type: "GET",
-        success: function (data, textStatus, jqXHR) {
-          console.log(data)
-
-          const productUrl = data.items[0].links[0].href
-
-          jQuery.ajax({
-            url: productUrl,
-            type: "GET",
-            success: function (data, textStatus, jqXHR) {
-              console.log("Manufacturer", data.manufacturer)
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              console.log("nounou")
-            }
-          });
-
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          console.log("nounou")
-        }
-      });
-
-      // "https://www.maalinpaikka.fi/epages/maalinpaikka.sf"
-      // http://epages02.mikko.pri/rs/shops/DemoShop
-
-      // jQuery(function () {
-      //   jQuery('.InfoArea').load('?ObjectPath=#Shop.Path[url]/Categories/TermsAndConditions .TermsAndConditions');
-      // });
-
+jQuery(document).ready(function($) {
+  require(["jquery", "jquery/cookie", "ep/fn/busy"], function($) {
+    //
+    // Main logic
+    //
+    try {
+      checkAllSeeingEye();
+    } catch (error) {
+      console.log(error);
+      return;
     }
 
-    fetchProductData();
+    // verify that product data exists (so that we are on product page)
+    if (!("Product" in window.AllSeeingEye)) {
+      return;
+    }
 
+    fetchProductData("manufacturer")
+      .then(function(manufacturer) {
+        console.log("Products manufacturer: " + manufacturer);
+        // now we should mount it to page
+      })
+      .catch(function(error) {
+        console.log(error);
+        return;
+      });
+
+    //
+    // HELPER FUNCTIONS
+    //
+
+    function checkAllSeeingEye() {
+      if (!("AllSeeingEye" in window)) {
+        throw new Error("AllSeeingEye not defined in window object");
+      }
+
+      if (!("RESTAPIURL" in window.AllSeeingEye.Shop)) {
+        throw new Error("RESTAPIURL not defined in AllSeeingEye object");
+      }
+    }
+
+    function mountTextToHtml() {
+      jQuery(".ProductDetails.");
+    }
+
+    //
+    // fetchProductData(attribute)
+    //
+    // Attribute from: https://developer.epages.com/apps/api-reference/get-shopid-products-productid
+    //
+    function fetchProductData(attribute) {
+      return new Promise((resolve, reject) => {
+        // before this checkAllSeeingEye() should have been ran
+
+        var fullUrl =
+          window.AllSeeingEye.Shop.RESTAPIURL +
+          /products/ +
+          window.AllSeeingEye.Product.GUID;
+
+        jQuery.ajax({
+          url: fullUrl,
+          type: "GET",
+          success: function(data, textStatus, jqXHR) {
+            console.log(data);
+            return resolve(data[attribute]);
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            throw new Error("Failed to fetch product data");
+          }
+        });
+      });
+    }
   });
-
-
 });
 
+//
+//
+//
+//
+//
+//
+
+// resolve needed variables
+// console.log(
+//   "requestProtocolAndServer: ",
+//   window.ep.config.requestProtocolAndServer
+// );
+// console.log("storeFrontUrl: ", window.ep.config.storeFrontUrl);
+
+// var url =
+//   window.ep.config.requestProtocolAndServer ||
+//   "http://epages02.mikko.pri/";
+// var storefront =
+//   window.ep.config.requestProtocolAndServer ||
+//   "http://epages02.mikko.pri/epages/DemoShop.sf";
+
+// // extremely shady
+// var shopName = storefront.substring(
+//   storefront.lastIndexOf("/") + 1,
+//   storefront.lastIndexOf(".")
+// );
+
+// var restUrl = url + "rs/shops/" + shopName;
+// console.log(restUrl);
+
+// var canonicalUrl = window.ep.config.canonicalUrl;
+// var productId = /[^/]*$/.exec(canonicalUrl)[0];
+
+// console.log(productId);
+
+// // http: //epages02.mikko.pri/rs/shops/DemoShop/products/?resultsPerPage=100&q=md_49417110
+// var requestUrl = restUrl + "/products/?q=" + productId;
+
+// console.log("requestUrl", requestUrl);
+
+// jQuery.ajax({
+//   url: requestUrl,
+//   type: "GET",
+//   success: function(data, textStatus, jqXHR) {
+//     console.log(data);
+
+//     var productUrl = data.items[0].links[0].href;
+
+//     jQuery.ajax({
+//       url: productUrl,
+//       type: "GET",
+//       success: function(data, textStatus, jqXHR) {
+//         console.log("Manufacturer", data.manufacturer);
+//       },
+//       error: function(jqXHR, textStatus, errorThrown) {
+//         console.log("nounou");
+//       }
+//     });
+//   },
+//   error: function(jqXHR, textStatus, errorThrown) {
+//     console.log("nounou");
+//   }
+// });
+
+// "https://www.maalinpaikka.fi/epages/maalinpaikka.sf"
+// http://epages02.mikko.pri/rs/shops/DemoShop
+
+// jQuery(function () {
+//   jQuery('.InfoArea').load('?ObjectPath=#Shop.Path[url]/Categories/TermsAndConditions .TermsAndConditions');
+// });
 
 // helper to log
 // console.logf = function(msg, url, line) {

@@ -10,12 +10,15 @@
 
 */
 
-// Depends on cartridge FI_GAGAR::AllSeeingEye which maps object AllSeeingEye to
+// IMPORTANT:
+//Depends on cartridge FI_GAGAR::AllSeeingEye which maps object AllSeeingEye to
 // window object. See https://github.com/vilkasgroup/FI_GAGAR/tree/develop/AllSeeingEye
 // for more details
 
+// Provides function to fetch wanted product data from REST API. If no attribute is given, returns whole product data object.
+
 jQuery(document).ready(function($) {
-  require(["jquery", "jquery/cookie", "ep/fn/busy"], function($) {
+  require(["jquery"], function($) {
     //
     // Main logic
     //
@@ -78,10 +81,16 @@ jQuery(document).ready(function($) {
           type: "GET",
           success: function(data, textStatus, jqXHR) {
             console.log(data);
-            return resolve(data[attribute]);
+
+            // return the whole product object if no attribute is given
+            if (attribute === undefined) {
+              return resolve(data);
+            } else {
+              return resolve(data[attribute]);
+            }
           },
           error: function(jqXHR, textStatus, errorThrown) {
-            throw new Error("Failed to fetch product data");
+            return reject("Failed to fetch product data");
           }
         });
       });

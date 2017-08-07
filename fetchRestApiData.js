@@ -40,57 +40,57 @@ jQuery(document).ready(function($) {
         console.log(error);
         return;
       });
-
-    //
-    // HELPER FUNCTIONS
-    //
-
-    function checkAllSeeingEye() {
-      if (!("AllSeeingEye" in window)) {
-        throw new Error("AllSeeingEye not defined in window object");
-      }
-
-      if (!("RESTAPIURL" in window.AllSeeingEye.Shop)) {
-        throw new Error("RESTAPIURL not defined in AllSeeingEye object");
-      }
-    }
-
-    function mountTextToHtml() {
-      jQuery(".ProductDetails.");
-    }
-
-    //
-    // fetchProductData(attribute)
-    //
-    // Attribute from: https://developer.epages.com/apps/api-reference/get-shopid-products-productid
-    //
-    function fetchProductData(attribute) {
-      return new Promise((resolve, reject) => {
-        // before this checkAllSeeingEye() should have been ran
-
-        var fullUrl =
-          window.AllSeeingEye.Shop.RESTAPIURL +
-          /products/ +
-          window.AllSeeingEye.Product.GUID;
-
-        jQuery.ajax({
-          url: fullUrl,
-          type: "GET",
-          success: function(data, textStatus, jqXHR) {
-            console.log(data);
-
-            // return the whole product object if no attribute is given
-            if (attribute === undefined) {
-              return resolve(data);
-            } else {
-              return resolve(data[attribute]);
-            }
-          },
-          error: function(jqXHR, textStatus, errorThrown) {
-            return reject("Failed to fetch product data");
-          }
-        });
-      });
-    }
   });
 });
+
+//
+// HELPER FUNCTIONS
+//
+
+function checkAllSeeingEye() {
+  if (!("AllSeeingEye" in window)) {
+    throw new Error("AllSeeingEye not defined in window object");
+  }
+
+  if (!("RESTAPIURL" in window.AllSeeingEye.Shop)) {
+    throw new Error("RESTAPIURL not defined in AllSeeingEye object");
+  }
+}
+
+function mountTextToHtml() {
+  jQuery(".ProductDetails.");
+}
+
+//
+// fetchProductData(attribute)
+//
+// Attribute from: https://developer.epages.com/apps/api-reference/get-shopid-products-productid
+//
+function fetchProductData(attribute) {
+  return new Promise((resolve, reject) => {
+    // before this checkAllSeeingEye() should have been ran
+
+    var fullUrl =
+      window.AllSeeingEye.Shop.RESTAPIURL +
+      /products/ +
+      window.AllSeeingEye.Product.GUID;
+
+    jQuery.ajax({
+      url: fullUrl,
+      type: "GET",
+      success: function(data, textStatus, jqXHR) {
+        console.log(data);
+
+        // return the whole product object if no attribute is given
+        if (attribute === undefined) {
+          return resolve(data);
+        } else {
+          return resolve(data[attribute]);
+        }
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return reject("Failed to fetch product data");
+      }
+    });
+  });
+}

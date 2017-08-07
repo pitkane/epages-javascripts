@@ -41,12 +41,12 @@ function fetchProductDataFromRest() {
   console.log(restUrl);
 
   var canonicalUrl = window.ep.config.canonicalUrl;
-  var productId = /[^/]*$/.exec(canonicalUrl)[0];
+  var productNumber = /[^/]*$/.exec(canonicalUrl)[0];
 
-  console.log(productId);
+  console.log("ProductID: ", productNumber);
 
   // http: //epages02.mikko.pri/rs/shops/DemoShop/products/?resultsPerPage=100&q=md_49417110
-  var requestUrl = restUrl + "/products/?q=" + productId;
+  var requestUrl = restUrl + "/products/?q=" + productNumber;
 
   console.log("requestUrl", requestUrl);
 

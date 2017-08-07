@@ -13,9 +13,24 @@
 
 jQuery(document).ready(function($) {
   require(["jquery", "jquery/cookie", "ep/fn/busy"], function($) {
-    fetchProductDataFromRest();
+    // check that we are on a product page
+    if ($(".ProductDetails").length) {
+      try {
+        // make the query
+        var manufacturer = fetchProductDataFromRest("manufacturer");
+        // mount it to the page
+        mountTextToHtml("asdf");
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+    }
   });
 });
+
+//
+// HELPER FUNCTIONS
+//
 
 function fetchProductDataFromRest() {
   // resolve needed variables
@@ -63,17 +78,22 @@ function fetchProductDataFromRest() {
         type: "GET",
         success: function(data, textStatus, jqXHR) {
           console.log("Manufacturer", data.manufacturer);
+          return data.manufacturer;
         },
         error: function(jqXHR, textStatus, errorThrown) {
-          console.log("nounou");
+          throw new Error(errorThrown);
         }
       });
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      console.log("nounou");
+      throw new Error(errorThrown);
     }
   });
 
   // "https://www.maalinpaikka.fi/epages/maalinpaikka.sf"
   // http://epages02.mikko.pri/rs/shops/DemoShop
+}
+
+function mountTextToHtml() {
+  console.log("You lazy bum!");
 }

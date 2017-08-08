@@ -1,7 +1,7 @@
 /*
 
 //Depends on cartridge FI_GAGAR::AllSeeingEye which maps object AllSeeingEye to
-// window object. See https://github.com/vilkasgroup/FI_GAGAR/tree/develop/AllSeeingEye
+// epConfig object. See https://github.com/vilkasgroup/FI_GAGAR/tree/develop/AllSeeingEye
 // for more details
 
 // Provides function to fetch wanted product data from REST API. If no attribute is given, returns whole product data object.
@@ -26,15 +26,17 @@ jQuery(document).ready(function($) {
       return;
     }
 
-    // verify that product data exists (so that we are on product page)
-    if (!("Product" in window.AllSeeingEye)) {
+    // verify that we are on a product page (no mobileSF support, responsive all the things)
+    //  || PageTypeAlias === "MobileSF-Product"
+    var PageTypeAlias = epConfig.AllSeeingEye.v1.PageType.Alias;
+    if (PageTypeAlias !== "SF-Product") {
       return;
     }
 
     fetchProductData("manufacturer")
       .then(function(manufacturer) {
-        console.log("Products manufacturer: " + manufacturer);
-        // now we should mount it to page
+        mountTextToProductPage(manufacturer);
+        return;
       })
       .catch(function(error) {
         console.log(error);
@@ -47,18 +49,25 @@ jQuery(document).ready(function($) {
 // HELPER FUNCTIONS
 //
 
-function checkAllSeeingEye() {
-  if (!("AllSeeingEye" in window)) {
-    throw new Error("AllSeeingEye not defined in window object");
-  }
-
-  if (!("RESTAPIURL" in window.AllSeeingEye.Shop)) {
-    throw new Error("RESTAPIURL not defined in AllSeeingEye object");
-  }
+function mountTextToProductPage(manufacturer) {
+  console.log(manufacturer);
+  jQuery(".ProductRating").after("<p>Valmistaja: " + manufacturer + "</p>");
 }
 
-function mountTextToHtml() {
-  jQuery(".ProductDetails.");
+function checkAllSeeingEye() {
+  if (!("epConfig" in window)) {
+    throw new Error("epConfig not defined");
+  }
+
+  if (!("AllSeeingEye" in epConfig)) {
+    throw new Error("AllSeeingEye not defined in epConfig object");
+  }
+
+  if (!("RESTAPIURL" in epConfig.AllSeeingEye.v1.Shop)) {
+    throw new Error("RESTAPIURL not defined in AllSeeingEye object");
+  }
+
+  return;
 }
 
 //
@@ -71,9 +80,9 @@ function fetchProductData(attribute) {
     // before this checkAllSeeingEye() should have been ran
 
     var fullUrl =
-      window.AllSeeingEye.Shop.RESTAPIURL +
+      epConfig.AllSeeingEye.v1.Shop.RESTAPIURL +
       /products/ +
-      window.AllSeeingEye.Product.GUID;
+      epConfig.AllSeeingEye.v1.Object.GUID;
 
     jQuery.ajax({
       url: fullUrl,
